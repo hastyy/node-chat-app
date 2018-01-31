@@ -20,16 +20,40 @@ app.use(express.static(path.join(__dirname, '../public')));
 io.on('connection', (socket) => {
     console.log('New user connected');
 
-    socket.on('disconnect', (socket) => {
-        console.log('User was disconnected');
+    // Welcome message to newly connected user
+    socket.emit('newMessage', {
+        from: 'Admin',
+        text: 'Welcome to the chat app',
+        createdAt: new Date().getTime()
+    });
+
+    // Message to all other users informing new user joined
+    socket.broadcast.emit('newMessage', {
+        from: 'Admin',
+        text: 'New user joined',
+        createdAt: new Date().getTime()
     });
 
     socket.on('createMessage', (newMessage) => {
         console.log('createMessage', newMessage);
+
+        // socket.emit emits an event to a single user
+        // io.emit emits an event to all connected users
         io.emit('newMessage', {
             from: newMessage.from,
             text: newMessage.text,
             createdAt: new Date().getTime()
+        });
+
+        // Emits the event to everybody except this socket
+        // socket.broadcast.emit('newMessage', {
+        //     from: newMessage.from,
+        //     text: newMessage.text,
+        //     createdAt: new Date().getTime()
+        // });
+
+        socket.on('disconnect', (socket) => {
+            console.log('User was disconnected');
         });
     });
 });
