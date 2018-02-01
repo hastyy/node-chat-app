@@ -43,7 +43,8 @@ io.on('connection', (socket) => {
         // We can also send data on this acknoledgment which
         // will be made available on the client callback for
         // acknoledge.
-        callback('This is from the server');
+        //callback('This is from the server');
+        callback();
     });
 
     socket.on('createLocationMessage', (coords) => {
