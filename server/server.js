@@ -3,6 +3,8 @@ const socketIO = require('socket.io');
 const http = require('http');
 const path = require('path');
 
+const { generateMessage } = require('./utils/message');
+
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -21,36 +23,18 @@ io.on('connection', (socket) => {
     console.log('New user connected');
 
     // Welcome message to newly connected user
-    socket.emit('newMessage', {
-        from: 'Admin',
-        text: 'Welcome to the chat app',
-        createdAt: new Date().getTime()
-    });
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
 
     // Message to all other users informing new user joined
-    socket.broadcast.emit('newMessage', {
-        from: 'Admin',
-        text: 'New user joined',
-        createdAt: new Date().getTime()
-    });
+    // Emits the event to everybody except this socket
+    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
     socket.on('createMessage', (newMessage) => {
         console.log('createMessage', newMessage);
 
         // socket.emit emits an event to a single user
         // io.emit emits an event to all connected users
-        io.emit('newMessage', {
-            from: newMessage.from,
-            text: newMessage.text,
-            createdAt: new Date().getTime()
-        });
-
-        // Emits the event to everybody except this socket
-        // socket.broadcast.emit('newMessage', {
-        //     from: newMessage.from,
-        //     text: newMessage.text,
-        //     createdAt: new Date().getTime()
-        // });
+        io.emit('newMessage', generateMessage(newMessage.from, newMessage.text));
 
         socket.on('disconnect', (socket) => {
             console.log('User was disconnected');
