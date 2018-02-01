@@ -29,16 +29,25 @@ io.on('connection', (socket) => {
     // Emits the event to everybody except this socket
     socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
-    socket.on('createMessage', (newMessage) => {
+    socket.on('createMessage', (newMessage, callback) => {
         console.log('createMessage', newMessage);
 
         // socket.emit emits an event to a single user
         // io.emit emits an event to all connected users
         io.emit('newMessage', generateMessage(newMessage.from, newMessage.text));
 
-        socket.on('disconnect', (socket) => {
-            console.log('User was disconnected');
-        });
+        // Sends an acknoledge to the cliente saying that
+        // we received the message.
+        // This will trigger the callback registered on the
+        // client for when it receives an ack for that message.
+        // We can also send data on this acknoledgment which
+        // will be made available on the client callback for
+        // acknoledge.
+        callback('This is from the server');
+    });
+
+    socket.on('disconnect', (socket) => {
+        console.log('User was disconnected');
     });
 });
 
